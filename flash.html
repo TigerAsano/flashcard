@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      <link rel="manifest" href="./manifest.json">
+
+      <title>Flash LEAP</title>
+        <style>
+            body{
+                background-color: #3a8360ff;
+                color : white;
+                height: 100vh;
+                width: 100vw;
+            }
+            *{
+                padding: 0;
+                margin: 0;
+                box-sizing: border-box;
+            }
+
+            #outer{
+                padding : 20px;
+                height: 80vh;
+                height: calc(var(--vh, 1vh) * 100);
+                position: relative;
+                text-align : left;
+                font-size : 2vmax;
+                font-family: "Arial";
+            }
+            #inner{
+              display : flex;
+                position: absolute;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                left: 0;
+                margin: auto;
+                width: 80%;
+                height: 7rem;
+                text-align: center;
+                font-size: 6vmax;
+                font-family: "Arial";
+                align-items : center;
+                justify-content: center;
+            }
+
+        </style>
+    </head>
+
+    <body>
+        <div id="outer">
+            <div id="inner">
+              <p id="first"></p>
+            </div>
+        </div>
+        <script src="./main.js"></script>
+        <script>
+
+            const params = new URL(window.location.href).searchParams;
+            const info = [params.get("start"),params.get("end"),params.get("subject"),params.get("mode"),params.get("num"),params.get("meaning")]
+            let contents,numbers;
+            (async function(){
+                 [contents,numbers] = await getList(...info);
+                 document.getElementById("first").textContent = contents[0];
+                 if(info[2] === "worldHistory-10min-test") document.getElementById("inner").style.fontSize = "3vmax";
+
+            })();
+               
+
+            let now = 0;
+
+            // スワイプ／フリック
+            document.addEventListener('touchmove', logSwipe);
+
+            // タッチ開始
+            document.addEventListener('touchstart', logSwipeStart);
+
+            // タッチ終了
+            document.addEventListener('touchend', logSwipeEnd);
+                  function logSwipeStart(event) {
+            event.preventDefault();
+
+            startX = event.touches[0].pageX;
+            startY = event.touches[0].pageY;
+          }
+
+            function logSwipe(event) {
+                event.preventDefault();
+                endY = event.touches[0].pageY;
+                endX = event.touches[0].pageX;
+            }
+
+            function logSwipeEnd(event) {
+                event.preventDefault();
+                if(Math.abs(endX - startX) < endY - startY){
+                  archive()
+                } else if( 0 < (endX - startX) ) {
+                    prev();
+                } else {
+                    next();
+                }
+            }
+
+            document.addEventListener("keydown" , e=>{
+
+                if(e.code === "ArrowRight") next();
+
+                if(e.code === "ArrowLeft") prev();
+              
+                if(e.code === "ArrowUp") archive();
+
+            });
+          
+          function archive(){
+              
+            const res = confirm("アーカイブしますか？");
+            if(res){
+              const a = window.localStorage.getItem("IIIIII" + info[2])?.split(",") || [];
+              a.push(numbers[now]);
+              window.localStorage.setItem("IIIIII" + info[2],a.join(","));
+            }
+            
+          }
+            
+             function next(){
+
+                if(now + 1 === contents.length) {
+
+                  const res = confirm("問題を更新しますか？");
+                  if(res){
+                    getList(...info).then(v => {
+                        [contents,numbers] = v;
+                        document.getElementById("inner").innerText = contents[0];
+                if(info[2] != "worldHistory-10min-test") document.getElementById("inner").style.fontSize = "6vmax";
+                    });
+    
+
+                    now=0;
+                  }
+                  return ;
+
+                }
+
+                now += 1;
+
+                if(now%2){
+
+                  document.getElementById("inner").innerText = contents[now];
+                  document.getElementById("inner").style.fontSize = "3vmax";
+
+                  return ;
+                }
+
+                document.getElementById("inner").innerText = contents[now];
+                if(info[2] != "worldHistory-10min-test") document.getElementById("inner").style.fontSize = "6vmax";
+
+            }
+
+            function prev(){
+
+                if(now === 0 ) {
+                  
+                  const res = confirm("トップに戻りますか？");
+
+                  if(res) {
+      
+                  window.top.location.href = "./index.html";
+                  }
+                  return;
+
+                };
+
+                now -= 1;
+
+
+                if(now%2){
+
+                  document.getElementById("inner").innerText = contents[now];
+                  document.getElementById("inner").style.fontSize = "3vmax";
+
+                  return ;
+                }
+
+                document.getElementById("inner").innerText = contents[now];
+                if(info[2] != "worldHistory-10min-test") document.getElementById("inner").style.fontSize = "6vmax";
+
+
+
+            }
+
+        </script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').then(registration => {
+      console.log('ServiceWorker registration successful.');
+    }).catch(err => {
+      console.log('ServiceWorker registration failed.');
+    });
+  }
+</script>
+
+
+
+    </body>
+</html>

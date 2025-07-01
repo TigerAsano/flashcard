@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      <link rel="manifest" href="./manifest.json">
+
+      <title>Flash LEAP</title>
+        <style>
+            body{
+                background-color: #3a8360ff;
+                color : white;
+                height: 100vh;
+                width: 100vw;
+            }
+            *{
+                padding: 0;
+                margin: 0;
+                box-sizing: border-box;
+            }
+
+            #outer{
+                padding : 20px;
+                height: 80vh;
+                height: calc(var(--vh, 1vh) * 100);
+                position: relative;
+                text-align : left;
+                font-size : 2vmax;
+                font-family: "Arial";
+            }
+            #inner{
+                position: absolute;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                left: 0;
+                margin: auto;
+                width: 80%;
+                height: 7rem;
+                text-align: center;
+                font-size: 6vmax;
+                font-family: "Arial";
+            }
+
+        </style>
+    </head>
+
+    <body>
+        <div id="outer">
+            <div id="inner">
+              <p id="first"></p>
+            </div>
+        </div>
+
+        <script>
+
+            const params = new URL(window.location.href).searchParams;
+            const info = [params.get("start"),params.get("end"),params.get("subject"),params.get("mode"),params.get("num"),params.get("meaning")]
+            let contents,numbers;
+            (async function(){
+                 [contents,numbers] = await getList(...info);
+                 document.getElementById("first").textContent = contents[0];
+            })();
+               
+     
+            let now = 0;
+
+            // スワイプ／フリック
+            document.addEventListener('touchmove', logSwipe);
+
+            // タッチ開始
+            document.addEventListener('touchstart', logSwipeStart);
+
+            // タッチ終了
+            document.addEventListener('touchend', logSwipeEnd);
+                  function logSwipeStart(event) {
+            event.preventDefault();
+
+            startX = event.touches[0].pageX;
+          }
+
+            function logSwipe(event) {
+                event.preventDefault();
+
+                endX = event.touches[0].pageX;
+            }
+
+            function logSwipeEnd(event) {
+                event.preventDefault();
+
+                if( 0 < (endX - startX) ) {
+                    prev();
+                } else {
+                    next();
+                }
+            }
+
+            document.addEventListener("keydown" , e=>{
+
+                if(e.code === "ArrowRight") next();
+
+                if(e.code === "ArrowLeft") prev();
+
+            });
+            
+            function next(){
+
+                if(now + 1 === contents.length) return;
+
+                now += 1;
+
+                if(!contents[now].isQuestion){
+
+                  const html = contents[now].text.replaceAll("\n","<br>");
+                  document.getElementById("outer").textContent = "";
+                  document.getElementById("outer").innerHTML = html;
+
+
+                  return ;
+                }
+
+                document.getElementById("inner").textContent = contents[now].text;
+
+            }
+
+            function prev(){
+
+                if(now === 0 ) return;
+
+                  now -= 1;
+
+                if(!contents[now].isQuestion) {
+
+                  const html = contents[now].text.replaceAll("\n","<br>");
+                  document.getElementById("outer").textContent = "";
+                  document.getElementById("outer").innerHTML = html;
+
+                  return;
+
+                }
+
+                document.getElementById("outer").innerHTML = `<div id="inner"></div>`;
+                document.getElementById("inner").textContent = contents[now].text;
+
+
+            }
+
+        </script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').then(registration => {
+      console.log('ServiceWorker registration successful.');
+    }).catch(err => {
+      console.log('ServiceWorker registration failed.');
+    });
+  }
+</script>
+
+
+    </body>
+</html>

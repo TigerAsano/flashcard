@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>開智生のためのフラッシュカード</title>
+    <link rel="manifest" href="./manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* CSSリセットと基本設定 */
+        :root {
+            --primary-color: #4a69bd;
+            --secondary-color: #1e3799;
+            --background-color: #f8f9fa;
+            --container-bg-color: #ffffff;
+            --text-color: #343a40;
+            --border-color: #dee2e6;
+            --accent-color: #c82333;
+            --font-family: 'Noto Sans JP', sans-serif;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            font-size: 62.5%;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-size: 1.6rem;
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        /* 全体を囲むコンテナ */
+        .app-container {
+            width: 100%;
+            max-width: 800px;
+            background-color: var(--container-bg-color);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            padding: 3rem 4rem;
+            transition: all 0.3s ease;
+        }
+
+        /* ヘッダー */
+        .app-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 2rem;
+        }
+
+        .app-header h1 {
+            font-size: 2.8rem;
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
+        /* 本の選択エリア */
+        .book-selection h2 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .book-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 2.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .book-item {
+            cursor: pointer;
+            border: 3px solid transparent;
+            border-radius: 12px;
+            padding: 1rem;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .book-item img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .book-item:hover {
+            border-color: var(--primary-color);
+        }
+        
+        .book-item.selected {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 15px rgba(74, 105, 189, 0.5);
+        }
+
+        .book-item.selected img {
+            transform: scale(1.05);
+        }
+
+        /* 設定エリア */
+        .settings {
+            display: grid;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .setting-item label {
+            font-weight: 700;
+            white-space: nowrap;
+            margin-right: 2rem;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        input[type="number"], select {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            font-size: 1.6rem;
+            font-family: var(--font-family);
+            text-align: center;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 5px rgba(74, 105, 189, 0.5);
+        }
+
+        #range-start, #range-end {
+            width: 80px;
+        }
+
+        /* 実行ボタン */
+        .cta-section {
+            text-align: center;
+        }
+
+        .start-btn {
+            display: inline-block;
+            background-image: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+            color: white;
+            font-size: 2rem;
+            font-weight: 700;
+            padding: 1.5rem 5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .start-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(0, 0, 0, 0.25);
+        }
+        
+        /* レスポンシブ対応 */
+        @media (max-width: 600px) {
+            body {
+                padding: 1rem;
+            }
+            .app-container {
+                padding: 2rem;
+            }
+            .setting-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            .setting-item .input-group,
+            .setting-item select,
+            .setting-item input[type="number"] {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <header class="app-header">
+            <h1 id="currentBookTitle">必携英単語 LEAP</h1>
+        </header>
+
+        <main>
+            <section class="book-selection">
+                <h2>本を選択</h2>
+                <div class="book-list">
+                    <div class="book-item selected" data-subject="leap" data-title="必携英単語 LEAP" data-max="1935" data-show-meaning="true">
+                        <img src="https://cdn.glitch.global/11d006a8-5b3a-4652-b767-78669d8b944d/51PoJjHl5mL.jpg?v=1713700529766" alt="LEAP">
+                    </div>
+                    <div class="book-item" data-subject="EssentialEnglishExpressions" data-title="必携英語表現集" data-max="400" data-show-meaning="false">
+                        <img src="https://cdn.glitch.global/11d006a8-5b3a-4652-b767-78669d8b944d/61fS3muSGhL.jpg?v=1713700532861" alt="Expressions">
+                    </div>
+                    <div class="book-item" data-subject="315" data-title="古文単語315" data-max="315" data-show-meaning="false">
+                        <img src="https://cdn.glitch.global/11d006a8-5b3a-4652-b767-78669d8b944d/71lwbEL4gnS._AC_UF1000%2C1000_QL80_.jpg?v=1713700536409" alt="Koten 315">
+                    </div>
+                    <div class="book-item" data-subject="worldHistory-10min-test" data-title="詳説世界史10分間テスト" data-max="81" data-show-meaning="false">
+                        <img src="https://cdn.glitch.global/11d006a8-5b3a-4652-b767-78669d8b944d/3cauqsi8dfqcoc8s.jpg?v=1750831751487" alt="詳説世界史10分間テスト">
+                    </div>
+                    
+                    </div>
+            </section>
+
+            <section class="settings">
+                <h2>範囲を指定</h2>
+                <div class="setting-item">
+                    <label for="range-start">出題範囲</label>
+                    <div class="input-group">
+                        <input type="number" id="range-start" value="1" min="1">
+                        <span>~</span>
+                        <input type="number" id="range-end" value="1935">
+                    </div>
+                </div>
+                
+                <div class="setting-item" id="meaning-container">
+                    <label for="meaning">第n義</label>
+                    <select id="meaning">
+                        <option value="">全て</option>
+                        <option value="1">第一義</option>
+                        <option value="2">第二義</option>
+                        <option value="3">第三義以降</option>
+                    </select>
+                </div>
+
+                <div class="setting-item">
+                    <label for="num-questions">問題数</label>
+                    <input type="number" id="num-questions" value="8" min="1">
+                </div>
+
+                <div class="setting-item">
+                    <label for="test-mode">出題形式</label>
+                    <select id="test-mode">
+                        <option value="flash">Type : FLASH</option>
+                        <option value="auto">Type : AUTO</option>
+                        <option value="test">Type : TEST</option>
+                    </select>
+                </div>
+            </section>
+
+            <section class="cta-section">
+                <a href="#" id="start-link" class="start-btn">学習をはじめる</a>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOM要素の取得
+            const bookList = document.querySelector('.book-list');
+            const currentBookTitle = document.getElementById('currentBookTitle');
+            const rangeStart = document.getElementById('range-start');
+            const rangeEnd = document.getElementById('range-end');
+            const meaningContainer = document.getElementById('meaning-container');
+            const meaning = document.getElementById('meaning');
+            const numQuestions = document.getElementById('num-questions');
+            const testMode = document.getElementById('test-mode');
+            const startLink = document.getElementById('start-link');
+
+            // 学習パラメータの初期値
+            const params = {
+                subject: 'leap',
+                start: '1',
+                end: '1935',
+                meaning: '',
+                num: '8',
+                mode: 'flash'
+            };
+
+            // URLを更新する関数
+            const updateUrl = () => {
+                // オブジェクトから空の値を除外してクエリ文字列を生成
+                const queryParams = Object.entries(params)
+                    .filter(([key, value]) => value !== '' && value !== null)
+                    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+                    .join('&');
+                
+                startLink.href = `./${params.mode}.html?${queryParams}`;
+            };
+
+            // 本が選択されたときの処理
+            const selectBook = (bookElement) => {
+                // すべての選択を解除
+                document.querySelectorAll('.book-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
+                // クリックされた本を選択状態にする
+                bookElement.classList.add('selected');
+
+                // data属性から情報を取得
+                const dataset = bookElement.dataset;
+                params.subject = dataset.subject;
+                currentBookTitle.textContent = dataset.title;
+                
+                // 最大値と表示を更新
+                rangeEnd.value = dataset.max;
+                rangeEnd.max = dataset.max;
+                params.end = dataset.max;
+
+                // 第n義の表示/非表示を切り替え
+                if (dataset.showMeaning === 'true') {
+                    meaningContainer.style.display = 'flex';
+                    params.meaning = meaning.value;
+                } else {
+                    meaningContainer.style.display = 'none';
+                    params.meaning = ''; // LEAP以外では意味の指定をなくす
+                }
+                
+                updateUrl();
+            };
+
+            // 本のリストにイベントリスナーを設定 (イベント委任)
+            bookList.addEventListener('click', (e) => {
+                const bookItem = e.target.closest('.book-item');
+                if (bookItem) {
+                    selectBook(bookItem);
+                }
+            });
+
+            // 各設定項目の変更を監視
+            rangeStart.addEventListener('change', e => {
+                params.start = e.target.value;
+                updateUrl();
+            });
+            rangeEnd.addEventListener('change', e => {
+                params.end = e.target.value;
+                updateUrl();
+            });
+            meaning.addEventListener('change', e => {
+                params.meaning = e.target.value;
+                updateUrl();
+            });
+            numQuestions.addEventListener('change', e => {
+                params.num = e.target.value;
+                updateUrl();
+            });
+            testMode.addEventListener('change', e => {
+                params.mode = e.target.value;
+                updateUrl();
+            });
+
+            // 初期化処理
+            const initialize = () => {
+                const initialBook = document.querySelector('.book-item.selected');
+                if (initialBook) {
+                    selectBook(initialBook);
+                }
+                updateUrl();
+            };
+            
+            initialize();
+        });
+
+        // Service Workerの登録 (元のコードから流用)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js').then(registration => {
+                console.log('ServiceWorker registration successful.');
+            }).catch(err => {
+                console.log('ServiceWorker registration failed.');
+            });
+        }
+    </script>
+
+</body>
+</html>
