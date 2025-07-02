@@ -37,6 +37,7 @@ async function getData(subject,start,end,meaning){
     return res.splice(start-1,end-start).filter(v => !archiveWords.includes(`${v.number}`));
   }else if(subject === "worldHistory-10min-test"){
     let res;
+    console.log(sessionId);
     await fetch(`./${subject}.json?t=${sessionId}`).then(json => json.json()).then(json => res = json);
         return res.filter(v => v.number >= start && v.number <= end).map(v => {v.number = v.numberText;return v}).filter(v => !archiveWords.includes(`${v.numberText}`));
 
