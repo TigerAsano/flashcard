@@ -44,7 +44,7 @@ self.addEventListener('fetch', function (event) {
               return caches.open(DISP_VERSION)
                 .then(function (cache) {
                   console.log('cache.put');
-                  cache.put(getRequestWithoutParams(event.request).url, res.clone());
+                  cache.put(event.request, res.clone());
                   return res;
                 });
             })
