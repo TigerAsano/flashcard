@@ -60,8 +60,13 @@
             let contents,numbers;
             (async function(){
                  [contents,numbers] = await getList(...info);
+                 const isReverse = info[6];
                  document.getElementById("first").textContent = contents[0];
-                 if(info[2] === "worldHistory-10min-test") document.getElementById("inner").style.fontSize = "3vmax";
+                 if(info[2] === "worldHistory-10min-test") {
+                    document.getElementById("inner").style.fontSize = "3vmax";
+                 } else {
+                    document.getElementById("inner").style.fontSize = isReverse ? "3vmax" : "6vmax";
+                 }
 
             })();
                
@@ -130,7 +135,10 @@
                     getList(...info).then(v => {
                         [contents,numbers] = v;
                         document.getElementById("inner").innerText = contents[0];
-                if(info[2] != "worldHistory-10min-test") document.getElementById("inner").style.fontSize = "6vmax";
+                        const isReverse = info[6];
+                        if(info[2] != "worldHistory-10min-test") {
+                            document.getElementById("inner").style.fontSize = isReverse ? "3vmax" : "6vmax";
+                        }
                     });
     
 
@@ -141,17 +149,19 @@
                 }
 
                 now += 1;
+                const isReverse = info[6];
 
-                if(now%2){
-
+                if(now%2){ // Back side
                   document.getElementById("inner").innerText = contents[now];
-                  document.getElementById("inner").style.fontSize = "3vmax";
-
+                  document.getElementById("inner").style.fontSize = isReverse ? "6vmax" : "3vmax";
                   return ;
                 }
 
+                // Front side
                 document.getElementById("inner").innerText = contents[now];
-                if(info[2] != "worldHistory-10min-test") document.getElementById("inner").style.fontSize = "6vmax";
+                if(info[2] != "worldHistory-10min-test") {
+                    document.getElementById("inner").style.fontSize = isReverse ? "3vmax" : "6vmax";
+                }
 
             }
 
@@ -170,18 +180,19 @@
                 };
 
                 now -= 1;
+                const isReverse = info[6];
 
-
-                if(now%2){
-
+                if(now%2){ // Back side
                   document.getElementById("inner").innerText = contents[now];
-                  document.getElementById("inner").style.fontSize = "3vmax";
-
+                  document.getElementById("inner").style.fontSize = isReverse ? "6vmax" : "3vmax";
                   return ;
                 }
 
+                // Front side
                 document.getElementById("inner").innerText = contents[now];
-                if(info[2] != "worldHistory-10min-test") document.getElementById("inner").style.fontSize = "6vmax";
+                if(info[2] != "worldHistory-10min-test") {
+                    document.getElementById("inner").style.fontSize = isReverse ? "3vmax" : "6vmax";
+                }
 
 
 
