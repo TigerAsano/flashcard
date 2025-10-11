@@ -56,7 +56,7 @@
         <script>
 
             const params = new URL(window.location.href).searchParams;
-            const info = [params.get("start"),params.get("end"),params.get("subject"),params.get("mode"),params.get("num"),params.get("meaning")]
+            const info = [params.get("start"),params.get("end"),params.get("subject"),params.get("mode"),params.get("num"),params.get("meaning"),params.get("reverse") === 'true']
             let contents,numbers;
             (async function(){
                  [contents,numbers] = await getList(...info);
