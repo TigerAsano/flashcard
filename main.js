@@ -1,10 +1,8 @@
-
-async function getList(start,end,subject,mode="test",num=8,meaning) {
+async function getList(start,end,subject,mode="test",num=8,meaning, reverse) {
   
-
   [start,end,subject] = toDefault(start,end,subject);
   
-  const data = await getData(subject,start,end,meaning)//.filter(v => v);
+  const data = await getData(subject,start,end,meaning, reverse)//.filter(v => v);
   if(!data) return false;
   
   const questions = random(data,num)//.map(a => JSON.parse(a));
@@ -17,13 +15,26 @@ async function getList(start,end,subject,mode="test",num=8,meaning) {
 
 const sessionId = Date.now();
 
-async function getData(subject,start,end,meaning){
+async function getData(subject,start,end,meaning, reverse){
   
   const  archiveWords = window.localStorage.getItem("IIIIII" + subject)?.split(",") || [];
+  let res;
 
+  if(subject === "leap" || subject === "leap_second" || subject === "315" || subject === "EssentialEnglishExpressions" || subject === "worldHistory-10min-test"){
+    await fetch(`./${subject}.json`).then(json => json.json()).then(data => res = data);
+  } else {
+    return [];
+  }
+
+  if (reverse) {
+    res = res.map(item => ({
+      ...item,
+      frontText: item.backText,
+      backText: item.frontText
+    }));
+  }
+  
   if(subject === "leap" || subject === "leap_second"){
-    let res;
-    await fetch(`./${subject}.json`).then(json => json.json()).then(json => res = json);
     if(meaning){
       return res.splice(start-1,end-start).map(json => {
         json.backText = json.means[meaning-1];
@@ -32,15 +43,9 @@ async function getData(subject,start,end,meaning){
     }
     return res.splice(start-1,end-start).filter(v => !archiveWords.includes(`${v.number}`));
   }else if(subject === "315" || subject === "EssentialEnglishExpressions"){
-    let res;
-    await fetch(`./${subject}.json`).then(json => json.json()).then(json => res = json);
     return res.splice(start-1,end-start).filter(v => !archiveWords.includes(`${v.number}`));
   }else if(subject === "worldHistory-10min-test"){
-    let res;
-    console.log(sessionId);
-    await fetch(`./${subject}.json`).then(json => json.json()).then(json => res = json);
-        return res.filter(v => v.number >= start && v.number <= end).map(v => {v.number = v.numberText;return v}).filter(v => !archiveWords.includes(`${v.numberText}`));
-
+    return res.filter(v => v.number >= start && v.number <= end).map(v => {v.number = v.numberText;return v}).filter(v => !archiveWords.includes(`${v.numberText}`));
   }
 
   return [];
