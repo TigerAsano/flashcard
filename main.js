@@ -23,7 +23,7 @@ async function getData(subject,start,end,meaning){
 
   if(subject === "leap" || subject === "leap_second"){
     let res;
-    await fetch(`./{subject}.json`).then(json => json.json()).then(json => res = json);
+    await fetch(`./${subject}.json`).then(json => json.json()).then(json => res = json);
     if(meaning){
       return res.splice(start-1,end-start).map(json => {
         json.backText = json.means[meaning-1];
