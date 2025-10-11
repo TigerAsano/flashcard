@@ -1,14 +1,14 @@
-async function getList(start,end,subject,mode="test",num=8,meaning, reverse) {
+async function getList(start,end,subject,mode,num=8,meaning, reverse) {
   
   [start,end,subject] = toDefault(start,end,subject);
   
-  const data = await getData(subject,start,end,meaning, reverse)//.filter(v => v);
+  const data = await getData(subject,start,end,meaning, reverse);
   if(!data) return false;
   
-  const questions = random(data,num)//.map(a => JSON.parse(a));
+  const questions = random(data,num);
 
-  const contents = getContents[mode](questions);
-  const numbers = getNumbers[mode](questions);
+  const contents = getContents.flash(questions);
+  const numbers = getNumbers.flash(questions);
   return [contents,numbers];
 
 }
@@ -53,21 +53,7 @@ async function getData(subject,start,end,meaning, reverse){
 }
 
 const getNumbers = {
-  test : questions => {
-    const numbers = [];
-    for(let i=0,l=questions.length;i<l;i++){
-      numbers.push(questions[i].number);
-    }
-    return numbers;
-  },
   flash :questions => {
-    const numbers = [];
-    for(let i=0,l=questions.length;i<l;i++){
-      numbers.push(questions[i].number,questions[i].number);
-    }
-    return numbers;
-  },
-  auto :questions => {
     const numbers = [];
     for(let i=0,l=questions.length;i<l;i++){
       numbers.push(questions[i].number,questions[i].number);
@@ -77,78 +63,14 @@ const getNumbers = {
 }
 
 const getContents = {
-
-  test : questions => {
-
-    const contents = [];
-
-    const answers = [];
-    for(let i=0,l=questions.length;i<l;i++){
-
-      console.log(questions[i])
-
-      const {frontText,backText} = questions[i];
-      contents.push(
-        {
-          text : frontText,
-          isQuestion : true
-        }
-      );
-      answers.push(backText);
-
-    }
-
-    const hoge = (arr, size) => arr.flatMap((_, i, a) => i % size ? [] : [a.slice(i, i + size)]);
-
-    contents.push(...hoge(answers,8).map(d => {
-
-      return {
-        text : d.join("\n\r"),
-        isQuestion : false
-      };
-    }));
-
-    return contents;
-  },
   flash : questions => {
-
     const contents = [];
-
     for(let i=0,l=questions.length;i<l;i++){
       const {frontText,backText,number} = questions[i];
       contents.push(frontText,number + "\n" + backText);
     }
-
     return contents;
-    
-  },
-
-  memory : questions => {
-
-    const contents = [];
-
-    for(let i=0,l=questions.length;i<l;i++){
-      const {frontText,backText} = questions[i];
-      contents.push(frontText,backText.split(" ")[1]);
-    }
-
-    return contents;
-
-  },
-  auto : questions => {
-
-    const contents = [];
-
-    for(let i=0,l=questions.length;i<l;i++){
-      const {frontText,backText,number} = questions[i];
-      contents.push(frontText,number + "\n" + backText);
-    }
-
-    return contents;
-    
-  },
-
-
+  }
 }
 
 function getHomePage(){
@@ -158,37 +80,26 @@ function getHomePage(){
 function toDefault(start,end,subject){
 
   if(subject === "leap"){
-
     start = start?start:1;
     end = end?end:1936;
-
   }else if(subject === "315"){
-
     start = start?start:1;
     end = end?end:315;
-
   }
 
   if(start > end){
-
     [start , end] = [end,start];
-
   }
 
   return [start,end,subject];
-
 }
 
 function random(array,num){
-
    for (let i = array.length - 1; i > 0; i--) {
-        
       const random = Math.floor(Math.random() * (i+1));
       const tmp = array[i];
-    array[i] = array[random];
-    array[random] = tmp;
+      array[i] = array[random];
+      array[random] = tmp;
   }
-
   return array.splice(0,num);
-
 }
