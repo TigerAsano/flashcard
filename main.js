@@ -1,5 +1,81 @@
+/**
+ * 各単語帳（subject）ごとの設定を管理するオブジェクト。
+ * 新しい単語帳を追加する際は、ここに設定を追加します。
+ */
+const bookConfigs = {
+  "leap": {
+    rangeFilter: (data, start, end) => data.slice(start - 1, end),
+    processItem: (item, { meaning }) => {
+      if (meaning && item.means && item.means[meaning - 1]) {
+        // 特定の意味のみをbackTextに設定
+        const newBackText = item.means[meaning - 1];
+        if (newBackText) {
+          return { ...item, backText: newBackText };
+        }
+        return null; // 該当する意味がない場合は除外
+      }
+      return item;
+    },
+    archiveId: (item) => item.number,
+  },
+  "leap_second": {
+    // leapと同様の設定
+    rangeFilter: (data, start, end) => data.slice(start - 1, end),
+    processItem: (item, { meaning }) => {
+      if (meaning && item.means && item.means[meaning - 1]) {
+        const newBackText = item.means[meaning - 1];
+        if (newBackText) {
+          return { ...item, backText: newBackText };
+        }
+        return null;
+      }
+      return item;
+    },
+    archiveId: (item) => item.number,
+  },
+  "leap_basic": {
+    rangeFilter: (data, start, end) => data.slice(start - 1, end),
+    processItem: (item, { meaning }) => {
+      if (meaning && item.means && item.means[meaning - 1]) {
+        const newBackText = item.means[meaning - 1];
+        if (newBackText) {
+          return { ...item, backText: newBackText };
+        }
+        return null;
+      }
+      return item;
+    },
+    archiveId: (item) => item.number,
+  },
+  "315": {
+    rangeFilter: (data, start, end) => data.slice(start - 1, end),
+    archiveId: (item) => item.number,
+  },
+  "EssentialEnglishExpressions": {
+    rangeFilter: (data, start, end) => data.slice(start - 1, end),
+    archiveId: (item) => item.number,
+  },
+  "worldHistory-10min-test": {
+    rangeFilter: (data, start, end) => data.filter(v => v.number >= start && v.number <= end),
+    processItem: (item) => {
+      return { ...item, number: item.numberText };
+    },
+    archiveId: (item) => item.numberText, 
+  }
+};
+
+/**
+ * 指定された条件に基づいて単語リストを取得し、処理する非同期関数。
+ * @param {string} subject - 単語帳の主題 (例: "leap", "315")。
+ * @param {number} start - 出題範囲の開始番号。
+ * @param {number} end - 出題範囲の終了番号。
+ * @param {string} mode - モード（この関数では直接使用しない）。
+ * @param {number} num - 取得する問題数（この関数では直接使用しない）。
+ * @param {string} meaning - 特定の意味番号（leapシリーズ用）。
+ * @param {boolean} reverse - 表裏を逆にするかどうかのフラグ。
+ * @returns {Promise<Array|boolean>} 処理済みの単語データ配列、またはエラー時にfalse。
+ */
 async function getList(start,end,subject,mode,num=8,meaning, reverse) {
-  
   [start,end,subject] = toDefault(start,end,subject);
   
   const data = await getData(subject,start,end,meaning, reverse);
@@ -10,47 +86,48 @@ async function getList(start,end,subject,mode,num=8,meaning, reverse) {
   const contents = getContents.flash(questions);
   const numbers = getNumbers.flash(questions);
   return [contents,numbers];
-
 }
 
-const sessionId = Date.now();
+async function getData(subject, start, end, meaning, reverse) {
+  const archiveWords = window.localStorage.getItem("IIIIII" + subject)?.split(",") || [];
+  let data;
 
-async function getData(subject,start,end,meaning, reverse){
-  
-  const  archiveWords = window.localStorage.getItem("IIIIII" + subject)?.split(",") || [];
-  let res;
-
-  if(subject === "leap" || subject === "leap_second" || subject === "315" || subject === "EssentialEnglishExpressions" || subject === "worldHistory-10min-test"){
-    await fetch(`./${subject}.json`).then(json => json.json()).then(data => res = data);
-  } else {
+  // 1. JSONデータの取得
+  try {
+    const response = await fetch(`./${subject}.json`);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    data = await response.json();
+  } catch (e) {
+    console.error("Failed to fetch data:", e);
     return [];
   }
-
+  
+  const config = bookConfigs[subject];
+  if (!config) {
+    console.error(`Configuration for subject "${subject}" not found.`);
+    return [];
+  }
+  
   if (reverse) {
-    res = res.map(item => ({
+    data = data.map(item => ({
       ...item,
       frontText: item.backText,
       backText: item.frontText
     }));
   }
+
+  let items = config.rangeFilter(data, start, end);
   
-  if(subject === "leap" || subject === "leap_second"){
-    if(meaning){
-      return res.splice(start-1,end-start).map(json => {
-        json.backText = json.means[meaning-1];
-        return json;
-      }).filter(v => v.backText);
-    }
-    return res.splice(start-1,end-start).filter(v => !archiveWords.includes(`${v.number}`));
-  }else if(subject === "315" || subject === "EssentialEnglishExpressions"){
-    return res.splice(start-1,end-start).filter(v => !archiveWords.includes(`${v.number}`));
-  }else if(subject === "worldHistory-10min-test"){
-    return res.filter(v => v.number >= start && v.number <= end).map(v => {v.number = v.numberText;return v}).filter(v => !archiveWords.includes(`${v.numberText}`));
+  if (config.processItem) {
+    items = items.map(item => config.processItem(item, { meaning })).filter(Boolean); // nullになったアイテムを除外
   }
 
-  return [];
-
+  items = items.filter(item => !archiveWords.includes(String(config.archiveId(item))));
+  
+  return items;
 }
+
+const sessionId = Date.now();
 
 const getNumbers = {
   flash :questions => {
@@ -73,19 +150,12 @@ const getContents = {
   }
 }
 
-function getHomePage(){
-  return HtmlService.createHtmlOutputFromFile("urlGenerator").getContent();
-}
-
 function toDefault(start,end,subject){
+  const bookElement = document.querySelector(`.book-item[data-subject="${subject}"]`);
+  const max = bookElement ? bookElement.dataset.max : end;
 
-  if(subject === "leap"){
-    start = start?start:1;
-    end = end?end:1936;
-  }else if(subject === "315"){
-    start = start?start:1;
-    end = end?end:315;
-  }
+  start = start ? Number(start) : 1;
+  end = end ? Number(end) : max;
 
   if(start > end){
     [start , end] = [end,start];
@@ -101,5 +171,5 @@ function random(array,num){
       array[i] = array[random];
       array[random] = tmp;
   }
-  return array.splice(0,num);
+  return array.slice(0,num);
 }
