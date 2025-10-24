@@ -136,7 +136,7 @@
                         [contents,numbers] = v;
                         document.getElementById("inner").innerText = contents[0];
                         const isReverse = info[6];
-                        if(info[2] != "worldHistory-10min-test") {
+                        if(info[2] != "worldHistory-10min-test" && info[2] != "japaneseHistory-10min-test") {
                             document.getElementById("inner").style.fontSize = isReverse ? "3vmax" : "6vmax";
                         }
                     });
