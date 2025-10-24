@@ -62,7 +62,7 @@
                  [contents,numbers] = await getList(...info);
                  const isReverse = info[6];
                  document.getElementById("first").textContent = contents[0];
-                 if(info[2] === "worldHistory-10min-test") {
+                if(info[2] == "worldHistory-10min-test" || info[2] == "japaneseHistory-10min-test") {
                     document.getElementById("inner").style.fontSize = "3vmax";
                  } else {
                     document.getElementById("inner").style.fontSize = isReverse ? "3vmax" : "6vmax";
@@ -159,7 +159,7 @@
 
                 // Front side
                 document.getElementById("inner").innerText = contents[now];
-                if(info[2] != "worldHistory-10min-test") {
+                if(info[2] != "worldHistory-10min-test" && info[2] != "japaneseHistory-10min-test") {
                     document.getElementById("inner").style.fontSize = isReverse ? "3vmax" : "6vmax";
                 }
 
