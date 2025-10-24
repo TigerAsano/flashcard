@@ -61,6 +61,13 @@ const bookConfigs = {
       return { ...item, number: item.numberText };
     },
     archiveId: (item) => item.numberText, 
+  },
+  "japaneseHistory-10min-test": {
+    rangeFilter: (data, start, end) => data.filter(v => v.number >= start && v.number <= end),
+    processItem: (item) => {
+      return { ...item, number: item.numberText };
+    },
+    archiveId: (item) => item.numberText, 
   }
 };
 
