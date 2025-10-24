@@ -1,25 +1,19 @@
-/**
- * 各単語帳（subject）ごとの設定を管理するオブジェクト。
- * 新しい単語帳を追加する際は、ここに設定を追加します。
- */
 const bookConfigs = {
   "leap": {
     rangeFilter: (data, start, end) => data.slice(start - 1, end),
     processItem: (item, { meaning }) => {
       if (meaning && item.means && item.means[meaning - 1]) {
-        // 特定の意味のみをbackTextに設定
         const newBackText = item.means[meaning - 1];
         if (newBackText) {
           return { ...item, backText: newBackText };
         }
-        return null; // 該当する意味がない場合は除外
+        return null; 
       }
       return item;
     },
     archiveId: (item) => item.number,
   },
   "leap_second": {
-    // leapと同様の設定
     rangeFilter: (data, start, end) => data.slice(start - 1, end),
     processItem: (item, { meaning }) => {
       if (meaning && item.means && item.means[meaning - 1]) {
@@ -99,7 +93,6 @@ async function getData(subject, start, end, meaning, reverse) {
   const archiveWords = window.localStorage.getItem("IIIIII" + subject)?.split(",") || [];
   let data;
 
-  // 1. JSONデータの取得
   try {
     const response = await fetch(`./${subject}.json`);
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
